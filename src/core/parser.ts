@@ -50,6 +50,8 @@ function extractEndpoints(doc: OpenAPIDocument, schemas: Map<string, TypeSchema>
       { method: 'put' as const, operation: pathItem.put },
       { method: 'delete' as const, operation: pathItem.delete },
       { method: 'patch' as const, operation: pathItem.patch },
+      { method: 'options' as const, operation: pathItem.options },
+      { method: 'head' as const, operation: pathItem.head },
     ];
 
     for (const { method, operation } of methods) {
@@ -71,6 +73,7 @@ function extractEndpoints(doc: OpenAPIDocument, schemas: Map<string, TypeSchema>
 }
 
 function convertSchemaObject(schema: any, schemas: Map<string, TypeSchema>): TypeSchema {
+  if(!schema || typeof schema !== 'object') return { kind: 'any' }
   // Handle $ref (must come first—a $ref object should not be processed as anything else)
   if (schema.$ref) {
     const refName = schema.$ref.split('/').pop()!;
@@ -140,7 +143,7 @@ function parseParameters(params: any[] | undefined, schemas: Map<string, TypeSch
   return params.map(p => ({
     name: p.name,
     in: p.in,
-    required: p.required ?? false,
+    required: p.in === 'path' ? true : (p.required ?? false),
     schema: p.schema ? convertSchemaObject(p.schema, schemas) : { kind: 'string' },
     description: p.description,
   }));
