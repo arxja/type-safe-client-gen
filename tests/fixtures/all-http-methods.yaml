@@ -1,0 +1,31 @@
+openapi: "3.0.0"
+info:
+  title: HTTP Methods Test
+  version: "1.0"
+paths:
+  /resource:
+    get:
+      operationId: getResource
+      responses:
+        '200':
+          description: OK
+    post:
+      operationId: createResource
+      responses:
+        '201':
+          description: Created
+    put:
+      operationId: updateResource
+      responses:
+        '200':
+          description: OK
+    delete:
+      operationId: deleteResource
+      responses:
+        '204':
+          description: No Content
+    patch:
+      operationId: patchResource
+      responses:
+        '200':
+          description: OK
