@@ -4,7 +4,7 @@ export interface ApiSpec {
     version: string;
   };
   baseUrl: string;
-  endPoint: Endpoint[];
+  endpoints: Endpoint[];
   schemas: Map<string, TypeSchema>;
 }
 
