@@ -17,21 +17,19 @@ export function generateTypeScriptClient(spec: ApiSpec): string {
   parts.push(``);
   
   for (const [name, schema] of spec.schemas) {
-    if (schema.kind === 'any') continue; // Skip unresolved placeholders
+    if (schema.kind === 'any') continue;
     parts.push(generateTypeDefinition(name, schema));
     parts.push(``);
   }
 
   // Inline request/response types (only for non-$ref schemas)
   for (const endpoint of spec.endpoints) {
-    // Request body type
     if (endpoint.requestBody && endpoint.requestBody.schema.kind !== 'ref') {
       const reqType = getRequestTypeName(endpoint);
       parts.push(`export type ${reqType} = ${typeSchemaToTypeScript(endpoint.requestBody.schema)};`);
       parts.push(``);
     }
     
-    // Response type
     const successResponse = endpoint.responses.find(r => r.statusCode === '200' || r.statusCode === '201');
     if (successResponse && successResponse.schema.kind !== 'ref' && successResponse.schema.kind !== 'any') {
       const resType = getResponseTypeName(endpoint);
@@ -142,7 +140,6 @@ function generateClientFactory(spec: ApiSpec): string {
   lines.push(`  async function request<T>(method: string, path: string, options?: {`);
   lines.push(`    query?: Record<string, string | number | boolean>;`);
   lines.push(`    body?: unknown;`);
-  lines.push(`    headers?: Record<string, string>;`);
   lines.push(`  }): Promise<T> {`);
   lines.push(`    let url = \`\${baseUrl}\${path}\`;`);
   lines.push(``);
@@ -162,7 +159,6 @@ function generateClientFactory(spec: ApiSpec): string {
   lines.push(`      headers: {`);
   lines.push(`        'Content-Type': 'application/json',`);
   lines.push(`        ...config.headers,`);
-  lines.push(`        ...options?.headers,`);
   lines.push(`      },`);
   lines.push(`      body: options?.body ? JSON.stringify(options.body) : undefined,`);
   lines.push(`    });`);
@@ -192,46 +188,57 @@ function generateEndpointMethod(endpoint: Endpoint): string {
   const resType = getResponseType(endpoint);
   const bodyType = getBodyType(endpoint);
   
-  // Build parameter destructuring
-  const paramParts: string[] = [];
+  // Build the options type properties
+  const optionProps: string[] = [];
   
   if (pathParams.length > 0) {
-    const props = pathParams.map(p => `${p.name}${p.required ? '' : '?'}: ${typeSchemaToTypeScript(p.schema)}`);
-    paramParts.push(`params: { ${props.join('; ')} }`);
+    const props = pathParams
+      .map(p => `${p.name}${p.required ? '' : '?'}: ${typeSchemaToTypeScript(p.schema)}`)
+      .join('; ');
+    optionProps.push(`params: { ${props} }`);
   }
   
   if (queryParams.length > 0) {
-    const props = queryParams.map(p => `${p.name}${p.required ? '' : '?'}: ${typeSchemaToTypeScript(p.schema)}`);
-    paramParts.push(`query: { ${props.join('; ')} }`);
+    const props = queryParams
+      .map(p => `${p.name}${p.required ? '' : '?'}: ${typeSchemaToTypeScript(p.schema)}`)
+      .join('; ');
+    optionProps.push(`query?: { ${props} }`);
   }
   
   if (endpoint.requestBody) {
-    paramParts.push(`body: ${bodyType}`);
+    optionProps.push(`body: ${bodyType}`);
   }
   
-  const paramsStr = paramParts.length > 0 ? `{ ${paramParts.join('; ')} }` : '';
+  // Build the signature
+  let signature: string;
   
-  // Build function body
+  if (optionProps.length === 0) {
+    signature = `(): Promise<${resType}>`;
+  } else {
+    const optionsType = `{ ${optionProps.join('; ')} }`;
+    signature = `(options: ${optionsType}): Promise<${resType}>`;
+  }
+  
+  // Build method
   const methodUpper = endpoint.method.toUpperCase();
-  const optionsParts: string[] = [];
   
-  if (queryParams.length > 0) optionsParts.push('query');
-  if (endpoint.requestBody) optionsParts.push('body');
-  const optionsStr = optionsParts.length > 0 ? `{ ${optionsParts.join(', ')} }` : '';
-  
-  let body = '';
-  body += `    ${endpoint.id}: async (${paramsStr}): Promise<${resType}> => {\n`;
+  let body = `    ${endpoint.id}: async ${signature} => {\n`;
   body += `      let path = '${endpoint.path}';\n`;
   
   for (const param of pathParams) {
-    body += `      path = path.replace('{${param.name}}', String(params.${param.name}));\n`;
+    body += `      path = path.replace('{${param.name}}', String(options.params.${param.name}));\n`;
   }
   
-  body += `      return request<${resType}>('${methodUpper}', path`;
-  if (optionsStr) {
-    body += `, ${optionsStr}`;
+  const requestOpts: string[] = [];
+  if (queryParams.length > 0) requestOpts.push('query: options.query');
+  if (endpoint.requestBody) requestOpts.push('body: options.body');
+  
+  if (requestOpts.length > 0) {
+    body += `      return request<${resType}>('${methodUpper}', path, { ${requestOpts.join(', ')} });\n`;
+  } else {
+    body += `      return request<${resType}>('${methodUpper}', path);\n`;
   }
-  body += `);\n`;
+  
   body += `    },`;
   
   return body;
