@@ -3,7 +3,6 @@
 **Generate fully typed TypeScript HTTP clients from OpenAPI 3.0 specifications.**
 
 [![npm version](https://img.shields.io/npm/v/type-safe-client-gen.svg)](https://www.npmjs.com/package/type-safe-client-gen)
-[![CI](https://github.com/YOUR_USERNAME/type-safe-client-gen/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/type-safe-client-gen/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ---

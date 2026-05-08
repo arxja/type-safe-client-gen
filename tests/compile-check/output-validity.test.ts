@@ -1,38 +1,23 @@
+// tests/compile-check/output-validity.test.ts
 import { describe, it, expect } from 'bun:test';
 import { generateTypeScriptClient } from '../../src/generators/typescript.js';
 import type { ApiSpec } from '../../src/core/types.js';
 
-/**
- * These tests verify that generated output is syntactically valid TypeScript.
- * We compile each generated output with Bun to catch syntax errors.
- */
 describe('Output validity', () => {
   async function compilesWithoutError(code: string): Promise<boolean> {
-import { mkdtemp, rm } from 'node:fs/promises';
-import { join } from 'node:path';
-import { tmpdir } from 'node:os';
-import { describe, it, expect } from 'bun:test';
-import type { ApiSpec } from '../../src/core/types.js';
-
-async function compilesWithoutError(code: string): Promise<boolean> {
-    const tempDir = await mkdtemp(join(tmpdir(), 'tscg-check-'));
-    const tempFile = join(tempDir, 'index.ts');
-    await Bun.write(tempFile, code);
+    const tempDir = `/tmp/tscg-check-${Date.now()}`;
+    const tempFile = `${tempDir}/index.ts`;
     
     try {
+      await Bun.write(tempFile, code);
       const result = await Bun.build({
         entrypoints: [tempFile],
-        outdir: join(tempDir, 'dist'),
+        outdir: `${tempDir}/dist`,
         target: 'browser',
       });
       return result.success;
-    } finally {
-      await rm(tempDir, { recursive: true, force: true });
-    }
-  }
-      return result.success;
-    } finally {
-      await Bun.file(tempFile).delete().catch(() => {});
+    } catch {
+      return false;
     }
   }
 
