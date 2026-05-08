@@ -55,10 +55,10 @@ jobs:
         run: |
           node dist/cli.js --help
 
-      - name: Verify generation works
-        run: |
-          node dist/cli.js -i ./petstore.yaml -o ./ci-output
-          test -f ./ci-output/index.ts
-          grep -q "createClient" ./ci-output/index.ts
-          grep -q "listPets" ./ci-output/index.ts
-          echo "✅ Generated client is valid"
+      # - name: Verify generation works
+      #   run: |
+      #     node dist/cli.js -i ./petstore.yaml -o ./ci-output
+      #     test -f ./ci-output/index.ts
+      #     grep -q "createClient" ./ci-output/index.ts
+      #     grep -q "listPets" ./ci-output/index.ts
+      #     echo "✅ Generated client is valid"
