@@ -8,15 +8,28 @@ import type { ApiSpec } from '../../src/core/types.js';
  */
 describe('Output validity', () => {
   async function compilesWithoutError(code: string): Promise<boolean> {
-    const tempFile = `/tmp/tscg-check-${Date.now()}-${Math.random().toString(36).slice(2)}.ts`;
+import { mkdtemp, rm } from 'node:fs/promises';
+import { join } from 'node:path';
+import { tmpdir } from 'node:os';
+import { describe, it, expect } from 'bun:test';
+import type { ApiSpec } from '../../src/core/types.js';
+
+async function compilesWithoutError(code: string): Promise<boolean> {
+    const tempDir = await mkdtemp(join(tmpdir(), 'tscg-check-'));
+    const tempFile = join(tempDir, 'index.ts');
     await Bun.write(tempFile, code);
     
     try {
       const result = await Bun.build({
         entrypoints: [tempFile],
-        outdir: '/tmp/tscg-out',
+        outdir: join(tempDir, 'dist'),
         target: 'browser',
       });
+      return result.success;
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
+    }
+  }
       return result.success;
     } finally {
       await Bun.file(tempFile).delete().catch(() => {});
