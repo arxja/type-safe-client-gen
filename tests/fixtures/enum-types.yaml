@@ -1,0 +1,20 @@
+openapi: "3.0.0"
+info:
+  title: Enum Types Test
+  version: "1.0"
+paths:
+  /status:
+    get:
+      operationId: getStatus
+      responses:
+        '200':
+          description: Status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Status'
+components:
+  schemas:
+    Status:
+      type: string
+      enum: [pending, processing, completed, failed]

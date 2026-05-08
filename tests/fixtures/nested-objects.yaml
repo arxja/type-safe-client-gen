@@ -1,0 +1,50 @@
+openapi: "3.0.0"
+info:
+  title: Nested Objects Test
+  version: "1.0"
+paths:
+  /orders:
+    get:
+      operationId: getOrders
+      responses:
+        '200':
+          description: Orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Order'
+components:
+  schemas:
+    Order:
+      type: object
+      required:
+        - id
+        - customer
+      properties:
+        id:
+          type: integer
+        customer:
+          type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+            address:
+              type: object
+              properties:
+                street:
+                  type: string
+                city:
+                  type: string
+        items:
+          type: array
+          items:
+            type: object
+            properties:
+              productId:
+                type: integer
+              quantity:
+                type: integer
