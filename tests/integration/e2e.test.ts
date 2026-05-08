@@ -38,21 +38,25 @@ describe('End-to-end', () => {
     const spec = parseSpec(yaml, 'yaml');
     const output = generateTypeScriptClient(spec);
     
-    const tempDir = '/tmp/tscg-test-' + Date.now();
-    const tempFile = `${tempDir}/index.ts`;
-    
-    await Bun.write(tempFile, output);
-    
-    const result = await Bun.build({
-      entrypoints: [tempFile],
-      outdir: `${tempDir}/dist`,
-      target: 'browser',
-    });
-    
-    if (!result.success) {
-      console.error('Build failed with errors:', result.logs);
+    const tempDir = await mkdtemp(join(tmpdir(), 'tscg-test-'));
+    const tempFile = join(tempDir, 'index.ts');
+
+    try {
+      await Bun.write(tempFile, output);
+
+      const result = await Bun.build({
+        entrypoints: [tempFile],
+        outdir: join(tempDir, 'dist'),
+        target: 'browser',
+      });
+
+      if (!result.success) {
+        console.error('Build failed with errors:', result.logs);
+      }
+
+      expect(result.success).toBe(true);
+    } finally {
+      await rm(tempDir, { recursive: true, force: true });
     }
-    
-    expect(result.success).toBe(true);
   });
 });
