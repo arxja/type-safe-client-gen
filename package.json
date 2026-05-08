@@ -42,10 +42,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/arxjj/type-safe-client-gen.git"
+    "url": "https://github.com/arxja/type-safe-client-gen.git"
   },
   "bugs": {
-    "url": "https://github.com/arxjj/type-safe-client-gen/issues"
+    "url": "https://github.com/arxja/type-safe-client-gen/issues"
   },
   "homepage": "https://github.com/arxja/type-safe-client-gen#readme"
 }
