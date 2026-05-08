@@ -1,5 +1,5 @@
 import yaml from 'js-yaml';
-import type { OpenAPIDocument } from './openapi-types.js';
+import type { OpenAPIDocument } from './openapi-types';
 import type { ApiSpec, Endpoint, TypeSchema, Parameter, RequestBody, ResponseDef } from './types.js';
 
 export function parseSpec(rawSpec: string, format: 'yaml' | 'json'): ApiSpec {
