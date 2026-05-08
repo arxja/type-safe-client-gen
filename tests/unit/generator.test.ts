@@ -136,9 +136,9 @@ describe('Generator', () => {
       const spec = makeSpec({ endpoints: [endpoint] });
       const output = generateTypeScriptClient(spec);
       
-      expect(output).toContain('getUsers: async (): Promise<string> => {');
+      expect(output).toContain('getUsers: async (): Promise<GetUsersResponse> => {');
       expect(output).toContain("let path = '/users';");
-      expect(output).toContain("return request<string>('GET', path);");
+      expect(output).toContain("return request<GetUsersResponse>('GET', path);");
     });
 
     it('generates method with path parameters', () => {

@@ -21,16 +21,17 @@ export function parseSpec(rawSpec: string, format: 'yaml' | 'json'): ApiSpec {
 
 function extractSchemas(doc: OpenAPIDocument): Map<string, TypeSchema> {
   const schemas = new Map<string, TypeSchema>();
-  const components = doc.components?.schemas;
   
-  if (!components) return schemas;
+  if (!doc.components || !doc.components.schemas) {
+    return schemas;
+  }
+  
+  const components = doc.components.schemas;
 
-  // Pass 1: Register all names with placeholders (forward declaration)
   for (const name of Object.keys(components)) {
     schemas.set(name, { kind: 'any' });
   }
 
-  // Pass 2: Resolve everything with full reference map available
   for (const [name, schema] of Object.entries(components)) {
     schemas.set(name, convertSchemaObject(schema, schemas));
   }
